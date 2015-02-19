@@ -21,7 +21,7 @@ public class UDPClient {
 
 	private DatagramSocket sendSoc;
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		InetAddress	serverAddr = null;
 		int			recvPort;
 		int 		countTo;
@@ -48,27 +48,36 @@ public class UDPClient {
 
 
 		// TO-DO: Construct UDP client class and try to send messages
+		UDPClient client = new UDPClient();
+		client.testLoop(serverAddr, recvPort, countTo);
 	}
 
-	public UDPClient() {
+	public UDPClient() throws SocketException {
 		// TO-DO: Initialise the UDP socket for sending data
+		sendSoc = new DatagramSocket();
 	}
 
-	private void testLoop(InetAddress serverAddr, int recvPort, int countTo) {
+	private void testLoop(InetAddress serverAddr, int recvPort, int countTo) throws IOException {
 		int				tries = 0;
 
 		// TO-DO: Send the messages to the server
 		for (int i = 0; i < countTo; i++) 
 		{
-			
+			MessageInfo msg = new MessageInfo(i, countTo);
+			send(msg.toString(), serverAddr, recvPort);
 		}
 	}
 
-	private void send(String payload, InetAddress destAddr, int destPort) {
-		int				payloadSize;
+	private void send(String payload, InetAddress destAddr, int destPort) throws IOException {
+		int					pktSize;
 		byte[]				pktData;
 		DatagramPacket		pkt;
 
 		// TO-DO: build the datagram packet and send it to the server
+		pktData = payload.getBytes();
+		pktSize = pktData.length;
+		pkt = new DatagramPacket(pktData, pktSize, destAddr, destPort);
+		
+		sendSoc.send(pkt);
 	}
 }
