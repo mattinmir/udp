@@ -21,11 +21,11 @@ public class UDPServer {
 
 	private DatagramSocket recvSoc;
 	private int totalMessages = -1;
-	private boolean[] receivedMessages;
+	private boolean[] receivedMessages = null;
 	private boolean close;
 
-	private void run() throws IOException {
-		int				pacSize;
+	private void run() throws Exception {
+		int				pacSize = 256;
 		byte[]			pacData;
 		DatagramPacket 	pac;
 		
@@ -41,18 +41,13 @@ public class UDPServer {
 			try
 			{
 				recvSoc.receive(pac);
-				pacSize = pac.getLength();
-				pacData = new byte[pacSize];
+				processMessage(pac.toString());
 			}
 			catch(SocketTimeoutException e)
 			{
 				
 			}
 			
-			if(totalMessages == -1)
-			{
-				
-			}
 		}
 		
 	}
@@ -64,11 +59,24 @@ public class UDPServer {
 		// TO-DO: Use the data to construct a new MessageInfo object
 		msg = new MessageInfo(data);
 		// TO-DO: On receipt of first message, initialise the receive buffer
-		receivedMessages = new boolean[];
+		if (receivedMessages == null)
+		{
+			receivedMessages = new boolean[msg.totalMessages];
+			totalMessages = msg.totalMessages;
+		}
 		// TO-DO: Log receipt of the message
-		
+		receivedMessages[msg.messageNum] = true;
 		// TO-DO: If this is the last expected message, then identify
 		//        any missing messages
+		if (msg.messageNum == totalMessages)
+		{
+			System.out.println("Message Lost: ");
+			for (int i = 0; i < receivedMessages.length; i++) 
+			{
+				if(receivedMessages[i] == false)
+					System.out.println(i);
+			}
+		}
 
 	}
 
@@ -82,7 +90,7 @@ public class UDPServer {
 		System.out.println("UDPServer ready on port " + rp + "...");
 	}
 
-	public static void main(String args[]) throws IOException {
+	public static void main(String args[]) throws Exception {
 		int	recvPort;
 
 		// Get the parameters from command line
