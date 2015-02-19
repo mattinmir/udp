@@ -30,7 +30,7 @@ public class UDPClient {
 		// Get the parameters
 		if (args.length != 3) 
 		{
-			System.err.println("Arguments required: server name/IP, recv port, message count");
+			System.err.println("Arguments required: <server name/IP> <recv port> <message count>");
 			System.exit(-1);
 		}
 
@@ -63,7 +63,7 @@ public class UDPClient {
 		// TO-DO: Send the messages to the server
 		for (int i = 0; i < countTo; i++) 
 		{
-			MessageInfo msg = new MessageInfo(i, countTo);
+			MessageInfo msg = new MessageInfo(countTo, i);
 			send(msg.toString(), serverAddr, recvPort);
 		}
 	}

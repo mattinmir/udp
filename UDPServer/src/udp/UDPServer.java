@@ -17,14 +17,16 @@ import common.MessageInfo;
  * @author bandara
  *
  */
-public class UDPServer {
+public class UDPServer 
+{
 
 	private DatagramSocket recvSoc;
 	private int totalMessages = -1;
 	private boolean[] receivedMessages = null;
 	private boolean close;
 
-	private void run() throws Exception {
+	private void run() throws Exception
+	{
 		int				pacSize = 256;
 		byte[]			pacData;
 		DatagramPacket 	pac;
@@ -35,24 +37,24 @@ public class UDPServer {
 		pacData = new byte[pacSize];
 		pac = new DatagramPacket(pacData, pacData.length);
 		recvSoc.setSoTimeout(10000);
+		boolean finished = false;
 		
-		while(true)
+		while(!finished)
 		{
 			try
 			{
 				recvSoc.receive(pac);
-				processMessage(pac.toString());
+				System.out.println(new String(pac.getData(), "UTF-8"));
+				finished = processMessage(new String(pac.getData(), "UTF-8"));
 			}
 			catch(SocketTimeoutException e)
 			{
 				
-			}
-			
-		}
-		
+			}				
+		}		
 	}
 
-	public void processMessage(String data) throws Exception {
+	public boolean processMessage(String data) throws Exception {
 
 		MessageInfo msg = null;
 
@@ -68,15 +70,20 @@ public class UDPServer {
 		receivedMessages[msg.messageNum] = true;
 		// TO-DO: If this is the last expected message, then identify
 		//        any missing messages
-		if (msg.messageNum == totalMessages)
+		if (msg.messageNum == totalMessages -1) // If finished
 		{
-			System.out.println("Message Lost: ");
+			System.out.println("Messages Lost: ");
 			for (int i = 0; i < receivedMessages.length; i++) 
 			{
 				if(receivedMessages[i] == false)
 					System.out.println(i);
 			}
+			
+			return true;
 		}
+		else
+			return false;
+		
 
 	}
 
@@ -95,7 +102,7 @@ public class UDPServer {
 
 		// Get the parameters from command line
 		if (args.length != 1) {
-			System.err.println("Arguments required: recv port");
+			System.err.println("Arguments required: <recv port>");
 			System.exit(-1);
 		}
 		recvPort = Integer.parseInt(args[0]);
