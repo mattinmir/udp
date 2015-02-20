@@ -30,7 +30,8 @@ public class UDPClient {
 		// Get the parameters
 		if (args.length != 3) 
 		{
-			System.err.println("Arguments required: <server name/IP> <recv port> <message count>");
+			System.err.println("Arguments required: <server name/IP> "
+					+ "<recv port> <message count>");
 			System.exit(-1);
 		}
 
@@ -40,7 +41,8 @@ public class UDPClient {
 		} 
 		catch (UnknownHostException e) 
 		{
-			System.out.println("Bad server address in UDPClient, " + args[0] + " caused an unknown host exception " + e);
+			System.out.println("Bad server address in UDPClient, " 
+				+ args[0] + " caused an unknown host exception " + e);
 			System.exit(-1);
 		}
 		recvPort = Integer.parseInt(args[1]);
@@ -57,7 +59,9 @@ public class UDPClient {
 		sendSoc = new DatagramSocket();
 	}
 
-	private void testLoop(InetAddress serverAddr, int recvPort, int countTo) throws IOException {
+	private void testLoop(InetAddress serverAddr, int recvPort, 
+			int countTo) throws IOException
+	{
 		int				tries = 0;
 
 		// TO-DO: Send the messages to the server
@@ -68,7 +72,9 @@ public class UDPClient {
 		}
 	}
 
-	private void send(String payload, InetAddress destAddr, int destPort) throws IOException {
+	private void send(String payload, InetAddress destAddr, 
+			int destPort) throws IOException
+	{
 		int					pktSize;
 		byte[]				pktData;
 		DatagramPacket		pkt;

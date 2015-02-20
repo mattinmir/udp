@@ -5,6 +5,7 @@
 package udp;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
@@ -23,9 +24,8 @@ public class UDPServer
 	private DatagramSocket recvSoc;
 	private int totalMessages = -1;
 	private boolean[] receivedMessages = null;
-	private boolean close;
-
-	private void run() throws Exception
+	
+	private void run() throws Exception 
 	{
 		int				pacSize = 256;
 		byte[]			pacData;
@@ -36,9 +36,8 @@ public class UDPServer
 		//        Use a timeout (e.g. 30 secs) to ensure the program doesn't block forever
 		pacData = new byte[pacSize];
 		pac = new DatagramPacket(pacData, pacData.length);
-		recvSoc.setSoTimeout(10000);
+		recvSoc.setSoTimeout(5000);
 		
-		System.out.println("Running...");
 		boolean finished = false;
 		while(!finished)
 		{
@@ -46,16 +45,40 @@ public class UDPServer
 			{
 				recvSoc.receive(pac);
 				//System.out.println(new String(pac.getData(), "UTF-8"));
-				finished = processMessage(new String(pac.getData()).trim());
+				finished = processMessage(
+						new String(pac.getData()).trim());
 			}
 			catch(SocketTimeoutException e)
 			{
 				finished = true;
+				System.out.println("Timeout reached.");
+				
+				// If last message not received, check lost msgs here
+				int lostCount = 0;
+				int receivedCount = 0;
+				PrintWriter lost = new PrintWriter("UDP_lost.txt", 
+						"UTF-8");
+				
+				for (int i = 0; i < receivedMessages.length; i++) 
+				{
+					if(receivedMessages[i] == false)
+					{
+						lostCount++;
+						lost.println(i);
+					}
+					else
+						receivedCount++;
+				}
+				lost.close();
+				System.out.println("Messages Received: " + receivedCount);
+				System.out.println("Messages Lost: " + lostCount);
+				System.out.println("See UDP_lost.txt for lost messages.");
+				
 			}				
 		}		
 	}
 
-	public boolean processMessage(String data) throws Exception {
+	public boolean processMessage(String data) throws Exception  {
 
 		MessageInfo msg = null;
 
@@ -66,6 +89,7 @@ public class UDPServer
 		{
 			receivedMessages = new boolean[msg.totalMessages];
 			totalMessages = msg.totalMessages;
+			System.out.println("Processing messages...");
 		}
 		// TO-DO: Log receipt of the message
 		receivedMessages[msg.messageNum] = true;
@@ -74,15 +98,28 @@ public class UDPServer
 		if (msg.messageNum == totalMessages -1) // If finished
 		{
 			int lostCount = 0;
-			System.out.println("Messages Lost: ");
+			int receivedCount = 0;
+			PrintWriter lost = new PrintWriter("UDP_lost.txt", 
+					"UTF-8");
+			
 			for (int i = 0; i < receivedMessages.length; i++) 
 			{
 				if(receivedMessages[i] == false)
+				{
 					lostCount++;
+					lost.println(i);
+				}
+				else
+					receivedCount++;
 			}
-			System.out.println(lostCount);
+			System.out.println("Messages Received: " + receivedCount);
+			System.out.println("Messages Lost: " + lostCount);
+			System.out.println("See UDP_lost.txt for lost messages.");
+			lost.close();
+			
 			return true;
 		}
+		
 		else
 			return false;
 		
