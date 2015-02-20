@@ -37,19 +37,20 @@ public class UDPServer
 		pacData = new byte[pacSize];
 		pac = new DatagramPacket(pacData, pacData.length);
 		recvSoc.setSoTimeout(10000);
-		boolean finished = false;
 		
+		System.out.println("Running...");
+		boolean finished = false;
 		while(!finished)
 		{
 			try
 			{
 				recvSoc.receive(pac);
-				System.out.println(new String(pac.getData(), "UTF-8"));
-				finished = processMessage(new String(pac.getData(), "UTF-8"));
+				//System.out.println(new String(pac.getData(), "UTF-8"));
+				finished = processMessage(new String(pac.getData()).trim());
 			}
 			catch(SocketTimeoutException e)
 			{
-				
+				finished = true;
 			}				
 		}		
 	}
@@ -72,13 +73,14 @@ public class UDPServer
 		//        any missing messages
 		if (msg.messageNum == totalMessages -1) // If finished
 		{
+			int lostCount = 0;
 			System.out.println("Messages Lost: ");
 			for (int i = 0; i < receivedMessages.length; i++) 
 			{
 				if(receivedMessages[i] == false)
-					System.out.println(i);
+					lostCount++;
 			}
-			
+			System.out.println(lostCount);
 			return true;
 		}
 		else
