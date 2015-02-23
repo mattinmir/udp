@@ -36,7 +36,7 @@ public class UDPServer
 		//        Use a timeout (e.g. 30 secs) to ensure the program doesn't block forever
 		pacData = new byte[pacSize];
 		pac = new DatagramPacket(pacData, pacData.length);
-		recvSoc.setSoTimeout(5000);
+		recvSoc.setSoTimeout(10000);
 		
 		boolean finished = false;
 		while(!finished)
@@ -45,15 +45,15 @@ public class UDPServer
 			{
 				recvSoc.receive(pac);
 				//System.out.println(new String(pac.getData(), "UTF-8"));
-				finished = processMessage(
-						new String(pac.getData()).trim());
+				processMessage(new String(pac.getData()).trim());
 			}
 			catch(SocketTimeoutException e)
 			{
 				finished = true;
 				System.out.println("Timeout reached.");
 				
-				// If last message not received, check lost msgs here
+				// Check lost messages after timeout, as last message may not be 
+				// received, or may be received in wrong order
 				int lostCount = 0;
 				int receivedCount = 0;
 				PrintWriter lost = new PrintWriter("UDP_lost.txt", 
@@ -78,7 +78,7 @@ public class UDPServer
 		}		
 	}
 
-	public boolean processMessage(String data) throws Exception  {
+	public void processMessage(String data) throws Exception  {
 
 		MessageInfo msg = null;
 
@@ -93,37 +93,6 @@ public class UDPServer
 		}
 		// TO-DO: Log receipt of the message
 		receivedMessages[msg.messageNum] = true;
-		// TO-DO: If this is the last expected message, then identify
-		//        any missing messages
-		if (msg.messageNum == totalMessages -1) // If finished
-		{
-			int lostCount = 0;
-			int receivedCount = 0;
-			PrintWriter lost = new PrintWriter("UDP_lost.txt", 
-					"UTF-8");
-			
-			for (int i = 0; i < receivedMessages.length; i++) 
-			{
-				if(receivedMessages[i] == false)
-				{
-					lostCount++;
-					lost.println(i);
-				}
-				else
-					receivedCount++;
-			}
-			System.out.println("Messages Received: " + receivedCount);
-			System.out.println("Messages Lost: " + lostCount);
-			System.out.println("See UDP_lost.txt for lost messages.");
-			lost.close();
-			
-			return true;
-		}
-		
-		else
-			return false;
-		
-
 	}
 
 
