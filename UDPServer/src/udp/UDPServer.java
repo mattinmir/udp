@@ -36,7 +36,7 @@ public class UDPServer
 		//        Use a timeout (e.g. 30 secs) to ensure the program doesn't block forever
 		pacData = new byte[pacSize];
 		pac = new DatagramPacket(pacData, pacData.length);
-		recvSoc.setSoTimeout(10000);
+		recvSoc.setSoTimeout(4000);
 		
 		boolean finished = false;
 		while(!finished)
@@ -58,23 +58,30 @@ public class UDPServer
 				int receivedCount = 0;
 				PrintWriter lost = new PrintWriter("UDP_lost.txt", 
 						"UTF-8");
-				
-				for (int i = 0; i < receivedMessages.length; i++) 
+				try
 				{
-					if(receivedMessages[i] == false)
+					for (int i = 0; i < receivedMessages.length; i++) 
 					{
-						lostCount++;
-						lost.println(i);
+						if(receivedMessages[i] == false)
+						{
+							lostCount++;
+							lost.println(i);
+						}
+						else
+							receivedCount++;
 					}
-					else
-						receivedCount++;
+				}
+				catch(NullPointerException ex)
+				{
+					System.out.println("No messages recieved. Killing server.");
+					break;
 				}
 				lost.close();
 				System.out.println("Messages Received: " + receivedCount);
 				System.out.println("Messages Lost: " + lostCount);
 				System.out.println("See UDP_lost.txt for lost messages.");
 				
-			}				
+			}
 		}		
 	}
 
